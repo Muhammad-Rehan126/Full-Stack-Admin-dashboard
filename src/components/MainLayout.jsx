@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, Users, Package, ShoppingCart, Settings, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Users, Package, ShoppingCart, Settings, LogOut } from 'lucide-react';
 
 export default function MainLayout({ children, activePage, setActivePage }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -30,8 +30,11 @@ export default function MainLayout({ children, activePage, setActivePage }) {
             <h1 className="text-base font-extrabold tracking-wider text-white flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-blue-600"></span> BERRY
             </h1>
-            <button onClick={() => setSidebarOpen(false)} className="md:hidden text-slate-400 hover:text-white">
-              <X size={20} />
+            <button 
+              onClick={() => setSidebarOpen(false)} 
+              className="md:hidden text-slate-400 hover:text-white font-bold text-xl px-2"
+            >
+              ✕
             </button>
           </div>
 
@@ -74,9 +77,9 @@ export default function MainLayout({ children, activePage, setActivePage }) {
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="md:hidden p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
+              className="md:hidden p-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold text-lg leading-none"
             >
-              <Menu size={20} />
+              ☰
             </button>
             <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Admin Control Panel</span>
           </div>
