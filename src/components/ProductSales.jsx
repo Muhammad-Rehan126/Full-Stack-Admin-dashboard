@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import API from '../lib/api';
+import MobileNav from './MobileNav';
 import { 
   LayoutDashboard, 
   Users, 
@@ -39,6 +40,7 @@ import img12 from '../assets/img-12.png';
 
 export default function ProductSales({ activePage, setActivePage }) {
   const [darkMode, setDarkMode] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showCartDrawer, setShowCartDrawer] = useState(false);
@@ -136,6 +138,17 @@ export default function ProductSales({ activePage, setActivePage }) {
 
   return (
     <div className={`flex h-screen w-screen overflow-hidden ${darkMode ? 'bg-[#0f172a] text-slate-100' : 'bg-slate-50 text-slate-800'}`}>
+
+      <MobileNav
+        open={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        items={navigationItems}
+        activePage={activePage}
+        setActivePage={setActivePage}
+        darkMode={darkMode}
+        onSettings={() => setShowSettingsModal(true)}
+        onLogout={handleLogout}
+      />
       
       {/* SIDEBAR NAVIGATION */}
       <aside className={`hidden md:flex ${sidebarOpen ? 'w-64' : 'w-20'} border-r flex-col transition-all duration-300 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
@@ -175,6 +188,9 @@ export default function ProductSales({ activePage, setActivePage }) {
         {/* TOP NAVBAR */}
         <header className={`h-16 border-b flex items-center justify-between px-4 sm:px-6 z-20 gap-3 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
           <div className="flex items-center gap-3 flex-1 max-w-sm">
+            <button onClick={() => setMobileMenuOpen(true)} className="md:hidden p-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-500/10 cursor-pointer shrink-0" aria-label="Open menu">
+              <Menu size={18} />
+            </button>
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 w-full">
               <Search size={16} className="text-slate-400 shrink-0" />
               <input 
