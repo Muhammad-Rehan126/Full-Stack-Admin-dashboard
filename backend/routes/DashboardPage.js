@@ -1,13 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const Customer = require('../models/Customer');
-const Product = require('../models/Product');
 
 // Get Live Dashboard Analytics & Stats
 router.get('/', async (req, res) => {
   try {
     const totalCustomers = await Customer.countDocuments();
-    const totalProducts = await Product.countDocuments();
 
     const dashboardData = {
       totalSales: 99550,

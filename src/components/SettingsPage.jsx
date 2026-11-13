@@ -1,6 +1,4 @@
-import React from 'react';
-
-export default function SettingsPage({ activePage, setActivePage }) {
+export default function SettingsPage({ setActivePage }) {
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-4">Settings Page</h1>
@@ -26,9 +24,7 @@ export default function SettingsPage({ activePage, setActivePage }) {
 
 
 
-// import React from 'react';
 // import MainLayout from './MainLayout';
-import { Settings as SettingsIcon, Shield, Bell, User } from 'lucide-react';
 
 // export default function SettingsPage({ setActivePage }) {
 //   return (

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { LayoutDashboard, Users, Package, ShoppingCart, Settings, LogOut } from 'lucide-react';
 
 export default function MainLayout({ children, activePage, setActivePage }) {

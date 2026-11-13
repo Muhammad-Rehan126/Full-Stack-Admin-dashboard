@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import API from '../lib/api';
 import MobileNav from './MobileNav';
 import { 
@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 
-export default function Dashboard({ activePage, setActivePage }) {
+export default function Dashboard({ activePage, setActivePage, onLogout }) {
   const [darkMode, setDarkMode] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -135,9 +135,7 @@ export default function Dashboard({ activePage, setActivePage }) {
     setCartItems(prev => prev.filter(item => item.id !== id));
   };
 
-  const handleLogout = () => {
-    alert('Aap successfully logout ho chuke hain!');
-  };
+  const handleLogout = () => onLogout?.();
 
   const totalCartAmount = cartItems.reduce((acc, item) => acc + (item.price * item.qty), 0);
 
@@ -200,8 +198,8 @@ export default function Dashboard({ activePage, setActivePage }) {
         {/* TOP NAVBAR */}
         <header className={`h-16 border-b flex items-center justify-between px-4 sm:px-6 z-10 gap-3 ${darkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
           <div className="flex items-center gap-3 flex-1 max-w-sm">
-            <button onClick={() => setMobileMenuOpen(true)} className="md:hidden p-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-500/10 cursor-pointer shrink-0" aria-label="Open menu">
-              <Menu size={18} />
+            <button onClick={() => setMobileMenuOpen(true)} className="md:hidden inline-flex size-10 items-center justify-center rounded-xl border border-blue-200 bg-blue-50 text-blue-700 transition-colors hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-blue-900 dark:bg-blue-950/50 dark:text-blue-300 dark:hover:bg-blue-900/60 cursor-pointer shrink-0" aria-label="Open navigation menu" aria-expanded={mobileMenuOpen} aria-controls="mobile-navigation-drawer">
+              <Menu size={20} strokeWidth={2.25} aria-hidden="true" />
             </button>
             <div className="hidden sm:flex items-center gap-2 w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
               <Search size={16} className="text-slate-400 shrink-0" />
