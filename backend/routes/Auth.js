@@ -99,12 +99,17 @@ router.post('/register', registerLimiter, async (req, res) => {
     return res.status(503).json({ message: 'Authentication is not configured on the server.' });
   }
 
-  const name = typeof req.body?.name === 'string' ? req.body.name.trim() : '';
   const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+  const dateOfBirth = typeof req.body?.dateOfBirth === 'string' ? req.body.dateOfBirth : '';
   const password = typeof req.body?.password === 'string' ? req.body.password : '';
+  const parsedDateOfBirth = new Date(`${dateOfBirth}T00:00:00.000Z`);
+  const hasValidDateOfBirth = /^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth)
+    && Number.isFinite(parsedDateOfBirth.getTime())
+    && parsedDateOfBirth.toISOString().slice(0, 10) === dateOfBirth
+    && parsedDateOfBirth < new Date(new Date().toISOString().slice(0, 10));
 
-  if (name.length < 2 || name.length > 80 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.length < 12 || password.length > 128) {
-    return res.status(400).json({ message: 'Enter your name, a valid email, and a password with at least 12 characters.' });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !hasValidDateOfBirth || password.length < 8 || Buffer.byteLength(password, 'utf8') > 72) {
+    return res.status(400).json({ message: 'Enter a valid email, a date of birth in the past, and a password of 8 to 72 characters.' });
   }
 
   try {
@@ -115,15 +120,14 @@ router.post('/register', registerLimiter, async (req, res) => {
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
-    const user = await User.create({ name, email, passwordHash, role: 'admin' });
-    const token = jwt.sign(
-      { sub: user.id, email: user.email, role: user.role },
-      getJwtSecret(),
-      { algorithm: 'HS256', expiresIn: '8h' }
-    );
+    await User.create({
+      email,
+      dateOfBirth: parsedDateOfBirth,
+      passwordHash,
+      role: 'admin',
+    });
 
-    res.cookie(COOKIE_NAME, token, cookieOptions);
-    return res.status(201).json({ user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+    return res.status(201).json({ message: 'Account created successfully.' });
   } catch (error) {
     if (error.code === 11000) {
       return res.status(409).json({ message: 'An administrator account already exists. Please sign in.' });
