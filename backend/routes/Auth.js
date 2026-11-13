@@ -12,6 +12,13 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
   message: { message: 'Too many sign-in attempts. Try again in 15 minutes.' },
 });
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many account setup attempts. Try again in an hour.' },
+});
 const COOKIE_NAME = 'berry_session';
 const SESSION_DURATION_MS = 8 * 60 * 60 * 1000;
 const cookieOptions = {
@@ -70,10 +77,59 @@ router.post('/login', loginLimiter, async (req, res) => {
     );
 
     res.cookie(COOKIE_NAME, token, cookieOptions);
-    return res.json({ user: { id: user.id, email: user.email, role: user.role } });
+    return res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role } });
   } catch (error) {
     console.error('Login failed:', error.message);
     return res.status(500).json({ message: 'Unable to sign in right now.' });
+  }
+});
+
+router.get('/registration-status', async (req, res) => {
+  try {
+    const adminExists = await User.exists({ role: 'admin' });
+    return res.json({ canCreateAdmin: !adminExists });
+  } catch (error) {
+    console.error('Could not check account setup:', error.message);
+    return res.status(500).json({ message: 'Unable to check account setup right now.' });
+  }
+});
+
+router.post('/register', registerLimiter, async (req, res) => {
+  if (!getJwtSecret()) {
+    return res.status(503).json({ message: 'Authentication is not configured on the server.' });
+  }
+
+  const name = typeof req.body?.name === 'string' ? req.body.name.trim() : '';
+  const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+  const password = typeof req.body?.password === 'string' ? req.body.password : '';
+
+  if (name.length < 2 || name.length > 80 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.length < 12 || password.length > 128) {
+    return res.status(400).json({ message: 'Enter your name, a valid email, and a password with at least 12 characters.' });
+  }
+
+  try {
+    await User.init();
+    const adminExists = await User.exists({ role: 'admin' });
+    if (adminExists) {
+      return res.status(409).json({ message: 'The administrator account has already been created. Please sign in.' });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 12);
+    const user = await User.create({ name, email, passwordHash, role: 'admin' });
+    const token = jwt.sign(
+      { sub: user.id, email: user.email, role: user.role },
+      getJwtSecret(),
+      { algorithm: 'HS256', expiresIn: '8h' }
+    );
+
+    res.cookie(COOKIE_NAME, token, cookieOptions);
+    return res.status(201).json({ user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(409).json({ message: 'An administrator account already exists. Please sign in.' });
+    }
+    console.error('Account setup failed:', error.message);
+    return res.status(500).json({ message: 'Unable to create the account right now.' });
   }
 });
 
