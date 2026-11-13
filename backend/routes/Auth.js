@@ -113,7 +113,6 @@ router.post('/register', registerLimiter, async (req, res) => {
   }
 
   try {
-    await User.init();
     const adminExists = await User.exists({ role: 'admin' });
     if (adminExists) {
       return res.status(409).json({ message: 'The administrator account has already been created. Please sign in.' });
