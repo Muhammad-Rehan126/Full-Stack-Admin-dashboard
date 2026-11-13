@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import API from './lib/api';
 import CustomerProductsPage from './components/CustomerProducts';
 import Dashboard from './components/DashboardPage';
@@ -10,26 +10,6 @@ import SettingsPage from './components/SettingsPage';
 export default function App() {
   const [activePage, setActivePage] = useState('dashboard');
   const [user, setUser] = useState(null);
-  const [isCheckingSession, setIsCheckingSession] = useState(true);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    API.get('/auth/me')
-      .then(({ data }) => {
-        if (isMounted) setUser(data.user);
-      })
-      .catch(() => {
-        if (isMounted) setUser(null);
-      })
-      .finally(() => {
-        if (isMounted) setIsCheckingSession(false);
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   async function handleLogout() {
     try {
@@ -40,14 +20,6 @@ export default function App() {
       setUser(null);
       setActivePage('dashboard');
     }
-  }
-
-  if (isCheckingSession) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-950 text-sm text-slate-300" aria-live="polite">
-        Checking your session…
-      </main>
-    );
   }
 
   if (!user) return <LoginPage onLogin={setUser} />;
