@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, CheckCircle } from 'lucide-react';
 
 export default function CartPage({ cartItems, setCartItems, setActivePage }) {

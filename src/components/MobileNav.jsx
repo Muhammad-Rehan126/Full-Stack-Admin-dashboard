@@ -1,4 +1,3 @@
-import React from 'react';
 import { Settings, LogOut, X } from 'lucide-react';
 
 // Slide-in navigation drawer for screens below the md breakpoint.
@@ -9,12 +8,16 @@ export default function MobileNav({ open, onClose, items, activePage, setActiveP
   };
 
   return (
-    <div className={`md:hidden fixed inset-0 z-50 ${open ? '' : 'pointer-events-none'}`} aria-hidden={!open}>
+    <div className={`md:hidden fixed inset-0 z-50 ${open ? '' : 'pointer-events-none'}`} aria-hidden={!open} inert={!open}>
       <div
         onClick={onClose}
         className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0'}`}
       />
       <aside
+        id="mobile-navigation-drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Mobile navigation"
         className={`absolute inset-y-0 left-0 w-64 max-w-[80vw] flex flex-col border-r transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full'} ${darkMode ? 'bg-[#1e293b] border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'}`}
       >
         <div className="p-5 flex items-center justify-between border-b border-inherit">
