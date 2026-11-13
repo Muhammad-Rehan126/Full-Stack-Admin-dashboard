@@ -8,6 +8,7 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 
 const allowedOrigins = new Set([
+  'https://full-stack-admin-dashboard-zeta.vercel.app',
   'http://localhost:5173',
   'http://localhost:3000',
   ...(process.env.CLIENT_ORIGINS || '').split(',').map((origin) => origin.trim()).filter(Boolean),
