@@ -1,7 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { createHash, timingSafeEqual } = require('node:crypto');
 const User = require('../models/User');
 const { rateLimit } = require('express-rate-limit');
 
@@ -19,13 +18,6 @@ const registerLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: 'Too many account setup attempts. Try again in an hour.' },
-});
-const recoveryLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  limit: 5,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { message: 'Too many password recovery attempts. Try again in an hour.' },
 });
 const COOKIE_NAME = 'berry_session';
 const SESSION_DURATION_MS = 8 * 60 * 60 * 1000;
@@ -89,47 +81,6 @@ router.post('/login', loginLimiter, async (req, res) => {
   } catch (error) {
     console.error('Login failed:', error.message);
     return res.status(500).json({ message: 'Unable to sign in right now.' });
-  }
-});
-
-router.post('/recover', recoveryLimiter, async (req, res) => {
-  const expectedKey = process.env.ADMIN_RECOVERY_KEY;
-  if (!expectedKey || Buffer.byteLength(expectedKey, 'utf8') < 32) {
-    return res.status(503).json({ message: 'Password recovery is not configured on the server.' });
-  }
-
-  const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
-  const recoveryKey = typeof req.body?.recoveryKey === 'string' ? req.body.recoveryKey : '';
-  const password = typeof req.body?.password === 'string' ? req.body.password : '';
-
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || recoveryKey.length < 1 || recoveryKey.length > 256 || password.length < 8 || Buffer.byteLength(password, 'utf8') > 72) {
-    return res.status(400).json({ message: 'Enter a valid email, recovery key, and password of 8 to 72 characters.' });
-  }
-
-  const expectedDigest = createHash('sha256').update(expectedKey, 'utf8').digest();
-  const providedDigest = createHash('sha256').update(recoveryKey, 'utf8').digest();
-  if (!timingSafeEqual(expectedDigest, providedDigest)) {
-    return res.status(401).json({ message: 'The recovery key is incorrect.' });
-  }
-
-  const recoveryKeyHash = createHash('sha256').update(recoveryKey, 'utf8').digest('hex');
-
-  try {
-    const passwordHash = await bcrypt.hash(password, 12);
-    const user = await User.findOneAndUpdate(
-      { email, role: 'admin', adminRecoveryKeyHash: { $ne: recoveryKeyHash } },
-      { $set: { passwordHash, adminRecoveryKeyHash: recoveryKeyHash } },
-      { new: true }
-    );
-
-    if (!user) {
-      return res.status(409).json({ message: 'Admin account not found or this recovery key has already been used.' });
-    }
-
-    return res.json({ message: 'Password reset. Sign in with your new password.' });
-  } catch (error) {
-    console.error('Admin password recovery failed:', error.message);
-    return res.status(500).json({ message: 'Unable to reset the password right now.' });
   }
 });
 

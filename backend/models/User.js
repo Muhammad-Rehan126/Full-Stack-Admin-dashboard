@@ -6,7 +6,6 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     dateOfBirth: { type: Date },
     passwordHash: { type: String, required: true, select: false },
-    adminRecoveryKeyHash: { type: String, select: false },
     role: { type: String, enum: ['admin'], default: 'admin' },
   },
   { timestamps: true }
