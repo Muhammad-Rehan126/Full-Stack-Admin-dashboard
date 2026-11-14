@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import API from './lib/api';
-import CustomerProductsPage from './components/CustomerProducts';
-import Dashboard from './components/DashboardPage';
-import LoginPage from './components/LoginPage';
-import ManageProductsPage from './components/ManageProduct';
-import ProductSalesPage from './components/ProductSales';
-import SettingsPage from './components/SettingsPage';
+
+const CustomerProductsPage = lazy(() => import('./components/CustomerProducts'));
+const Dashboard = lazy(() => import('./components/DashboardPage'));
+const LoginPage = lazy(() => import('./components/LoginPage'));
+const ManageProductsPage = lazy(() => import('./components/ManageProduct'));
+const ProductSalesPage = lazy(() => import('./components/ProductSales'));
+const SettingsPage = lazy(() => import('./components/SettingsPage'));
 
 export default function App() {
   const [activePage, setActivePage] = useState('dashboard');
@@ -22,20 +23,33 @@ export default function App() {
     }
   }
 
-  if (!user) return <LoginPage onLogin={setUser} />;
-
   const pageProps = { activePage, setActivePage, onLogout: handleLogout };
+  let ActivePage = LoginPage;
 
-  switch (activePage) {
-    case 'customers':
-      return <CustomerProductsPage {...pageProps} />;
-    case 'manage':
-      return <ManageProductsPage {...pageProps} />;
-    case 'sales':
-      return <ProductSalesPage {...pageProps} />;
-    case 'settings':
-      return <SettingsPage {...pageProps} />;
-    default:
-      return <Dashboard {...pageProps} />;
+  if (user) {
+    switch (activePage) {
+      case 'customers':
+        ActivePage = CustomerProductsPage;
+        break;
+      case 'manage':
+        ActivePage = ManageProductsPage;
+        break;
+      case 'sales':
+        ActivePage = ProductSalesPage;
+        break;
+      case 'settings':
+        ActivePage = SettingsPage;
+        break;
+      default:
+        ActivePage = Dashboard;
+    }
   }
+
+  return (
+    <Suspense fallback={<main className="flex min-h-screen items-center justify-center text-sm text-slate-500" aria-busy="true">Loading workspace…</main>}>
+      {user
+        ? <ActivePage {...pageProps} />
+        : <ActivePage onLogin={setUser} />}
+    </Suspense>
+  );
 }
