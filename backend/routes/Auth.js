@@ -24,7 +24,7 @@ const SESSION_DURATION_MS = 8 * 60 * 60 * 1000;
 const cookieOptions = {
   httpOnly: true,
   secure: true,
-  sameSite: 'none',
+  sameSite: 'lax',
   path: '/',
   maxAge: SESSION_DURATION_MS,
 };
