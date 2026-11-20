@@ -1,18 +1,48 @@
 import { lazy, Suspense, useState } from 'react';
 import useSWR from 'swr';
+import LoginPage from './components/LoginPage';
 import API from './lib/api';
 
 const CustomerProductsPage = lazy(() => import('./components/CustomerProducts'));
 const Dashboard = lazy(() => import('./components/DashboardPage'));
-const LoginPage = lazy(() => import('./components/LoginPage'));
 const ManageProductsPage = lazy(() => import('./components/ManageProduct'));
 const ProductSalesPage = lazy(() => import('./components/ProductSales'));
 const SettingsPage = lazy(() => import('./components/SettingsPage'));
 const PAGE_NAMES = new Set(['dashboard', 'customers', 'manage', 'sales', 'settings']);
+const SESSION_HINT_KEY = 'admin-session-hint';
+
+function setSessionHint(isAuthenticated) {
+  try {
+    if (isAuthenticated) {
+      window.sessionStorage.setItem(SESSION_HINT_KEY, '1');
+    } else {
+      window.sessionStorage.removeItem(SESSION_HINT_KEY);
+    }
+  } catch {
+    // The server cookie remains the source of truth if session storage is unavailable.
+  }
+}
+
+function getSessionHint() {
+  try {
+    return window.sessionStorage.getItem(SESSION_HINT_KEY) === '1' ? { user: {} } : null;
+  } catch {
+    return null;
+  }
+}
 
 const fetcher = async (path) => {
-  const { data } = await API.get(path);
-  return data;
+  try {
+    const { data } = await API.get(path);
+    setSessionHint(true);
+    return data;
+  } catch (error) {
+    if (error.response?.status === 401) {
+      setSessionHint(false);
+      return null;
+    }
+    throw error;
+  }
 };
 
 function getInitialPage() {
@@ -22,7 +52,8 @@ function getInitialPage() {
 
 export default function App() {
   const [activePage, setActivePageState] = useState(getInitialPage);
-  const { data: session, error: sessionError, isLoading, mutate } = useSWR('/auth/me', fetcher, {
+  const { data: session, mutate } = useSWR('/auth/me', fetcher, {
+    fallbackData: getSessionHint(),
     revalidateOnFocus: false,
     shouldRetryOnError: false,
   });
@@ -40,17 +71,15 @@ export default function App() {
     } catch {
       // Remove the local session view even when the API is temporarily unreachable.
     } finally {
+      setSessionHint(false);
       await mutate(null, { revalidate: false });
       setActivePage('dashboard');
     }
   }
 
   function handleLogin(loggedInUser) {
+    setSessionHint(true);
     void mutate({ user: loggedInUser }, { revalidate: false });
-  }
-
-  if (isLoading && !sessionError) {
-    return <main className="flex min-h-screen items-center justify-center text-sm text-slate-500" aria-busy="true">Checking session…</main>;
   }
 
   const pageProps = { activePage, setActivePage, onLogout: handleLogout };

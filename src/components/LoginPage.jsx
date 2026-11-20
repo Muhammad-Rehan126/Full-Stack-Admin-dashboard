@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { ArrowRight, CalendarDays, CheckCircle2, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react';
 import API from '../lib/api';
 
+function preloadDashboard() {
+  void import('./DashboardPage');
+}
+
 export default function LoginPage({ onLogin }) {
   const [mode, setMode] = useState('login');
   const [email, setEmail] = useState('');
@@ -101,7 +105,7 @@ export default function LoginPage({ onLogin }) {
             <label htmlFor="email" className="mb-2 block text-sm font-medium text-slate-700">Email address</label>
             <div className="flex h-11 items-center gap-3 rounded-xl border border-slate-300 bg-white px-3.5 transition focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/15">
               <Mail size={17} className="shrink-0 text-slate-400" aria-hidden="true" />
-              <input id="email" name="email" type="email" autoComplete="username" required maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" className="h-full min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400" />
+              <input id="email" name="email" type="email" autoComplete="username" required maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)} onFocus={preloadDashboard} placeholder="you@example.com" className="h-full min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400" />
             </div>
           </div>
 
